@@ -1,1 +1,6 @@
 node_modules/
+hero.js
+item.js
+types.js
+*.map
+.idea/

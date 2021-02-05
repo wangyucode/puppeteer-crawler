@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "tsc && node hero.js",
+    "start-item": "tsc && node item.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "puppeteer": "^5.5.0"
+    "axios": "^0.21.1",
+    "puppeteer": "^5.5.0",
+    "typescript": "^4.1.3"
   }
 }
