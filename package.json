@@ -1,14 +1,17 @@
 {
-  "name": "y",
+  "name": "puppeteer-crawler",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node hero.js",
-    "start-item": "tsc && node item.js",
+    "build": "tsc",
+    "build:dev": "tsc -w",
+    "start:news": "node news.js",
+    "start:hero": "node hero.js",
+    "start:item": "node item.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "wayne",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.1",

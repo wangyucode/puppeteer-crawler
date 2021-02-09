@@ -1,6 +1,10 @@
-node_modules/
+node_modules
+.idea
+*.map
+
+
 hero.js
 item.js
 types.js
-*.map
-.idea/
+news.js
+
