@@ -12,10 +12,13 @@ async function main() {
     let news = [];
     const url = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL25ld3MvaW5kZXg=', "base64").toString('utf-8')
     console.log(url);
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        devtools: true,
+        defaultViewport: null
+    });
     const pages = await browser.pages();
 
-    for (let i = 1; i < 11; i++) {
+    for (let i = 1; i < 6; i++) {
         await pages[0].goto(`${url}${i}.html`);
         await sleep(1000);
         const pageNews = await pages[0].evaluate(() => {
@@ -39,7 +42,12 @@ async function main() {
 
     console.log(JSON.stringify(news, null, 2));
 
-    await browser.close();
+    for (const it of news) {
+        await pages[0].goto(it.href);
+        await sleep(1000);
+    }
+
+    //await browser.close();
 }
 
 async function updateHeroDetail(hero: any) {
