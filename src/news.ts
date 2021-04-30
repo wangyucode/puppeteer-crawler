@@ -10,7 +10,7 @@ async function crawlNews() {
     console.log(url);
     try {
         const browser = await puppeteer.launch({
-            devtools: true,
+            devtools: process.env.ENV === 'dev',
             defaultViewport: null
         });
         const pages = await browser.pages();
