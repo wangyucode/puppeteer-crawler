@@ -35,13 +35,16 @@ async function crawlNews() {
         }
         await login();
         await clearNews();
-
+        news = news.filter(it => {
+            const file = it.href.match(/.*\/(.+)\.html$/);
+            if (file && file.length > 0) {
+                return true;
+            } 
+            console.error("it.href-->", it.href);
+            return false;
+        });
         for (const it of news) {
             const file = it.href.match(/.*\/(.+)\.html$/);
-            if (!file || file.length < 1) {
-                console.error("it.href-->", it.href)
-                continue;
-            }
 
             it.img = convertImageUrl(it.img);
 
@@ -75,7 +78,8 @@ async function crawlNews() {
             detail.forEach(it => {
                 if (it.type === 'img') it.content = convertImageUrl(it.content);
             });
-            await uploadNewsDetail(file[1], detail);
+            it.href = file[1];
+            await uploadNewsDetail(it.href, detail);
         }
         await uploadNews(news);
         await browser.close();
