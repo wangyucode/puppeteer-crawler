@@ -36,11 +36,15 @@ async function crawlNews() {
     await clearNews();
 
     for (const it of news) {
-        await pages[0].goto(it.href);
-
-        it.href = it.href.match(/.*\/(.+)\.html$/)[1];
+        let file = it.href.match(/.*\/(.+)\.html$/);
+        if (!file || file.length < 1){
+            console.error("it.href-->", it.href)
+            continue;
+        } 
+        
         it.img = convertImageUrl(it.img);
 
+        await pages[0].goto(it.href);
         await sleep(1000);
         const detail: DotaNewsNode[] = await pages[0].evaluate(() => {
             const detail = [];
