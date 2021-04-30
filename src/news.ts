@@ -7,7 +7,6 @@ import { clearNews, login, uploadNews, uploadNewsDetail } from "./uploader";
 async function crawlNews() {
     let news: DotaNews[] = [];
     const url = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL25ld3MvaW5kZXg=', "base64").toString('utf-8');
-    console.log(url);
     try {
         const browser = await puppeteer.launch({
             devtools: process.env.ENV === 'dev',
@@ -16,6 +15,7 @@ async function crawlNews() {
         const pages = await browser.pages();
         const size = process.env.ENV === 'prod' ? 6 : 1;
         for (let i = 1; i <= size; i++) {
+            console.log(`${url}${i}.html`);
             await pages[0].goto(`${url}${i}.html`);
             await sleep(1000);
             const pageNews: DotaNews[] = await pages[0].evaluate(() => {
@@ -37,7 +37,7 @@ async function crawlNews() {
         await clearNews();
 
         for (const it of news) {
-            let file = it.href.match(/.*\/(.+)\.html$/);
+            const file = it.href.match(/.*\/(.+)\.html$/);
             if (!file || file.length < 1) {
                 console.error("it.href-->", it.href)
                 continue;
@@ -45,6 +45,7 @@ async function crawlNews() {
 
             it.img = convertImageUrl(it.img);
 
+            console.log(it.href);
             await pages[0].goto(it.href);
             await sleep(1000);
             const detail: DotaNewsNode[] = await pages[0].evaluate(() => {
@@ -74,7 +75,7 @@ async function crawlNews() {
             detail.forEach(it => {
                 if (it.type === 'img') it.content = convertImageUrl(it.content);
             });
-            await uploadNewsDetail(it.href, detail);
+            await uploadNewsDetail(file[1], detail);
         }
         await uploadNews(news);
         await browser.close();
