@@ -4,18 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "build:dev": "tsc -w",
-    "start:news": "node news.js",
-    "start:hero": "node hero.js",
-    "start:item": "node item.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:news": "ts-node src/news.ts",
+    "start:hero": "ts-node src/hero.ts",
+    "start:item": "ts-node src/item.ts"
   },
   "author": "wayne",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.1",
-    "puppeteer": "^5.5.0",
-    "typescript": "^4.1.3"
+    "dotenv": "^8.2.0",
+    "puppeteer": "^9.0.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
   }
 }
