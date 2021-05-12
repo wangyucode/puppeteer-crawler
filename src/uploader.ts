@@ -38,6 +38,6 @@ export async function login() {
             p: process.env.WYCODE_ADMIN_PASSWORD
         }
     });
-    if(process.env.ENV !== 'prod') console.log("login->", res.data);
-    token = res.data.data;
+    console.log("login->", res.data);
+    token = res.data.payload;
 }
