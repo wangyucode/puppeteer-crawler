@@ -6,7 +6,8 @@
   "scripts": {
     "start:news": "ts-node src/news.ts",
     "start:hero": "ts-node src/hero.ts",
-    "start:item": "ts-node src/item.ts"
+    "start:item": "ts-node src/item.ts",
+    "start:league": "ts-node src/league.ts"
   },
   "author": "wayne",
   "license": "ISC",
