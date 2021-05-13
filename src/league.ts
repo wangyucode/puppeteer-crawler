@@ -9,7 +9,8 @@ async function start() {
     try {
         const browser = await puppeteer.launch({
             devtools: process.env.ENV === 'dev',
-            defaultViewport: null
+            defaultViewport: null,
+            args: ['--lang=zh-CN,zh']
         });
         let pages = await browser.pages();
         console.log(url);
