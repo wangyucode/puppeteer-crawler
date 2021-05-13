@@ -5,7 +5,7 @@ const server = process.env.ENV === 'prod' ? "https://wycode.cn" : "http://localh
 let token = "";
 
 export async function uploadLeagues(leagues: any[]) {
-    const res: any = await axios.put(`${server}/node/admin/dota/league`, leagues, {
+    const res: any = await axios.put(`${server}/node/admin/dota/leagues`, leagues, {
         headers: {
             Authorization: `Bearer ${token}`
         }
