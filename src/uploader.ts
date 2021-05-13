@@ -4,6 +4,15 @@ import { DotaNews, DotaNewsNode } from "./types";
 const server = process.env.ENV === 'prod' ? "https://wycode.cn" : "http://localhost:8082";
 let token = "";
 
+export async function uploadLeagues(leagues: any[]) {
+    const res: any = await axios.put(`${server}/node/admin/dota/league`, leagues, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    console.log("uploadNews->", res.data);
+}
+
 export async function uploadNews(news: DotaNews[]) {
     const res: any = await axios.put(`${server}/node/admin/dota/news`, news, {
         headers: {
