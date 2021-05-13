@@ -1,8 +1,7 @@
 import puppeteer from "puppeteer/lib/cjs/puppeteer/node-puppeteer-core";
 import * as dotenv from "dotenv";
-import { convertImageUrl, sleep } from "./utils";
-import { DotaNews, DotaNewsNode } from "./types";
-import { clearNews, login, uploadNews, uploadNewsDetail } from "./uploader";
+import { sleep } from "./utils";
+import { login, uploadLeagues } from "./uploader";
 
 async function start() {
     const url = Buffer.from('aHR0cHM6Ly93d3cudnBnYW1lLmNvbS9zY2hlZHVsZS9sZWFndWU/Z2FtZV90eXBlPWRvdGE=', "base64").toString('utf-8');
@@ -79,8 +78,9 @@ async function start() {
 
         console.log("size-->", leagues.length);
         console.log("leagues-->", JSON.stringify(leagues, null, 2));
-
-        // await browser.close();
+        await login();
+        await uploadLeagues(leagues);
+        await browser.close();
     } catch (e) {
         console.error("crawler leagues error-->", e);
         process.exit(1);
