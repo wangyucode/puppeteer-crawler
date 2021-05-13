@@ -4,13 +4,12 @@ import { sleep } from "./utils";
 import { login, uploadLeagues } from "./uploader";
 
 async function start() {
-    const url = Buffer.from('aHR0cHM6Ly93d3cudnBnYW1lLmNvbS9zY2hlZHVsZS9sZWFndWU/Z2FtZV90eXBlPWRvdGE=', "base64").toString('utf-8');
+    const url = Buffer.from('aHR0cHM6Ly93d3cudnBnYW1lLmNvbS9zY2hlZHVsZS9sZWFndWU/Z2FtZV90eXBlPWRvdGEmbGFuZz16aF9DTg==', "base64").toString('utf-8');
     const leagues = [];
     try {
         const browser = await puppeteer.launch({
             devtools: process.env.ENV === 'dev',
-            defaultViewport: null,
-            args: ['--lang=zh-CN']
+            defaultViewport: null
         });
         let pages = await browser.pages();
         console.log(url);
