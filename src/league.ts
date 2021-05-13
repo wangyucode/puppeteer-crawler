@@ -67,8 +67,12 @@ async function start() {
                 const img = document.querySelector('div.info-logo > img').src;
                 const title = document.querySelector('div.info-text-date > span').textContent;
                 const date = document.querySelector('div.info-text-date').textContent.substring(title.length).trim().split('至');
-                const start = date[0];
-                const end = date[1];
+                let start = new Date(date[0]);
+                // @ts-ignore
+                start = `${start.getFullYear()}/${start.getMonth()+1}/${start.getDate()}`
+                let end = new Date(date[1]);
+                // @ts-ignore
+                end = `${end.getFullYear()}/${end.getMonth()+1}/${end.getDate()}`
                 const location = document.querySelector('span.b2 > i').textContent;
                 const organizer = document.querySelector('span.b3 > i').textContent;
                 const prize = document.querySelector('span.b5 > i').textContent;
