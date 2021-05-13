@@ -18,6 +18,8 @@ async function start() {
             return document.querySelectorAll('ul.place-nav > li').length;
         });
 
+        console.log('areas--->', areas);
+
         const nameStar = new Map();
         for (let i = 0; i < areas; i++) {
             await pages[0].evaluate((index) => {
@@ -46,6 +48,7 @@ async function start() {
                 });
                 return areaLeagues;
             });
+            console.log('areaLeagues--->', i, JSON.stringify(areaLeagues, null, 2))
             for (const v of areaLeagues) {
                 nameStar.set(v.name, v);
             }
@@ -78,8 +81,13 @@ async function start() {
 
         console.log("size-->", leagues.length);
         console.log("leagues-->", JSON.stringify(leagues, null, 2));
-        await login();
-        await uploadLeagues(leagues);
+        if (leagues.length) {
+            await login();
+            await uploadLeagues(leagues);
+        } else {
+            throw new Error('length = 0!');
+        }
+
         await browser.close();
     } catch (e) {
         console.error("crawler leagues error-->", e);
