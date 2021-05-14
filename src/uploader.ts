@@ -13,15 +13,6 @@ export async function uploadSchedules(schedules: any[]) {
     console.log("uploadSchedule->", res.data);
 }
 
-export async function uploadTeams(teams: any[]) {
-    const res: any = await axios.put(`${server}/node/admin/dota/teams`, teams, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-    console.log("uploadTeams->", res.data);
-}
-
 export async function uploadLeagues(leagues: any[]) {
     const res: any = await axios.put(`${server}/node/admin/dota/leagues`, leagues, {
         headers: {

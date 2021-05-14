@@ -1,6 +1,6 @@
 import puppeteer from "puppeteer/lib/cjs/puppeteer/node-puppeteer-core";
 import * as dotenv from "dotenv";
-import { login, uploadSchedules, uploadTeams } from "./uploader";
+import { login, uploadSchedules} from "./uploader";
 
 async function start() {
     const url = Buffer.from('aHR0cHM6Ly93d3cudnBnYW1lLmNvbS9zY2hlZHVsZT9nYW1lX3R5cGU9ZG90YSZsYW5nPXpoX0NO', "base64").toString('utf-8');
@@ -43,33 +43,12 @@ async function start() {
             return schedules;
         });
 
-        const teams = await pages[0].evaluate(() => {
-            const teams = [];
-
-            const teamBoxes = document.querySelectorAll('li.ant-list-item');
-            // @ts-ignore
-             for (const box of teamBoxes) {
-                const num = box.querySelector('div.rank').textContent;
-                const point = box.querySelector('div.point').textContent;
-                // @ts-ignore
-                const logo = box.querySelector('div.team > span:nth-child(1) > img').src;
-                const name = box.querySelector('div.team > span:nth-child(2)').textContent;
-
-                teams.push({num,point,name,logo});
-             }
-             return teams;
-        });
-
 
         console.log(JSON.stringify(schedules, null, 2));
-        console.log(JSON.stringify(teams, null, 2));
 
         await login();
-        await uploadTeams(teams);
         await uploadSchedules(schedules);
-        if (!teams.length) {
-            throw new Error('teams length = 0!');
-        }
+       
         if (!schedules.length) {
             throw new Error('schedules length = 0!');
         }
