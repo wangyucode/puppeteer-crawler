@@ -1,5 +1,4 @@
 import axios from "axios";
-import {MongoDota2Hero, MongoHeroDetail} from "./types";
 import * as readline from "readline";
 import puppeteer from "puppeteer/lib/cjs/puppeteer/node-puppeteer-core";
 import evaluate = require("./evaluate-item");
