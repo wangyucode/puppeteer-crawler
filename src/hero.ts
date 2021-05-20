@@ -1,171 +1,85 @@
-import puppeteer from "puppeteer/lib/cjs/puppeteer/node-puppeteer-core";
 import axios from "axios";
 import * as dotenv from "dotenv";
-import { MongoDota2Hero, MongoHeroDetail } from "./types";
-import * as readline from "readline";
-import evaluate = require("./evaluate-detail");
-
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
+import { MongoHeroDetail } from "./types";
+import { getBehaviorName, getDispellableName, getEffectsName, getImmunityName } from "./utils";
 
 async function main() {
-
-
     const listUrl = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2RhdGFmZWVkL2hlcm9MaXN0P3Rhc2s9aGVyb2xpc3Q=', 'base64').toString('utf-8');
     console.log("listUrl->", listUrl);
-    const res = await axios.get(listUrl);
 
-    console.log(res.data.result.heroes);
+    try {
+        const res = await axios.get(listUrl);
+        const heroes = res.data.result.heroes;
+        console.log("heroes->", heroes.length, heroes[0]);
+        const detailUrl = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2RhdGFmZWVkL2hlcm8/aGVyb19pZD0=', 'base64').toString('utf-8');
+        for (const h of heroes) {
+            const res_d = await axios.get(detailUrl + h.id);
+            const res_h = res_d.data.result.heroes;
 
-    // const browser = await puppeteer.launch({
-    //     devtools: true,
-    //     defaultViewport: null
-    // });
-    // const pages = await browser.pages();
+            const result = {
+                _id: res_h.id,
+                name: res_h.name_loc,
+                eng: res_h.name_english_loc,
+                type: ['力量', '敏捷', '智力'][res_h.primary_attr],
+                story: res_h.bio_loc,
+                strengthStart: res_h.str_base,
+                strengthGrow: res_h.str_gain.toFixed(1),
+                agilityStart: res_h.agi_base,
+                agilityGrow: res_h.agi_gain.toFixed(1),
+                intelligenceStart: res_h.int_base,
+                intelligenceGrow: res_h.int_gain.toFixed(1),
+                attackType: res_h.attack_capability === 1 ? '近战' : "远程",
+                attackPower: res_h.damage_min + "-" + res_h.damage_max,
+                attackRate: res_h.attack_rate.toFixed(0),
+                attackRange: res_h.attack_range,
+                armor: res_h.armor.toFixed(1),
+                magicResistance: res_h.magic_resistance + "%",
+                speed: res_h.movement_speed,
+                img: res_h.index_img,
+                projectileSpeed: res_h.projectile_speed,
+                turnRate: res_h.turn_rate.toFixed(2),
+                sightDay: res_h.sight_range_day,
+                sightNight: res_h.sight_range_night,
+                health: res_h.max_health,
+                healthRegen: res_h.health_regen.toFixed(2),
+                mana: res_h.max_mana,
+                manaRegen: res_h.mana_regen.toFixed(2),
+                abilities: []
+            }
+            let num = 0;
+            for (const a of res_h.abilities) {
+                const ability = {
+                    name: a.name_loc,
+                    imageUrl: a.img,
+                    description: a.desc_loc,
+                    annotation: a.lore_loc,
+                    magicConsumption: a.mana_costs.join('/'),
+                    coolDown: a.cooldowns.join("/"),
+                    tips: a.notes_loc.join("\n"),
+                    shard: a.shard_loc,
+                    scepter: a.scepter_loc,
+                    behavior: getBehaviorName(a.behavior),
+                    dispellable: getDispellableName(a.dispellable),
+                    immunity: getImmunityName(a.immunity),
+                    effect: getEffectsName(a.target_team + "," + a.target_type),
+                    damage: ["", "物理", "魔法", "纯粹", "纯粹"][a.damage],
+                    num
+                }
+                num++;
+                result.abilities.push(ability);
+            }
 
-    // await pages[0].goto(Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2hlcm9lcy9pbmRleC5odG0=', 'base64').toString('utf-8'));
-    // const links = await pages[0].evaluate(() => {
-    //     const links = [];
-    //     document.querySelectorAll('.heroPickerIconLink').forEach((it: HTMLLinkElement) => links.push(it.href));
-    //     return links;
-    // });
-    // rl.write(`共获取到 ${links.length} 个英雄\n`);
+            console.log("hero up->", result);
+            break;
+        }
 
-    // for (let link of links) {
-    //     await pages[0].goto(link);
-    //     await sleep(1000);
-    //     const hero: MongoHeroDetail | any = await pages[0].evaluate(evaluate).catch(console.error);
 
-    //     if (!hero) {
-    //         rl.write(`出错！：${link}`);
-    //         continue;
-    //     }
-
-    //     rl.write(`比对 ${hero.name}\n`);
-
-    //     const res: MongoHeroDetail | any = await axios.get(`${server}/api/public/dota/heroDetail`, {
-    //         params: {
-    //             heroName: hero.name
-    //         }
-    //     }).catch(console.error);
-    //     const heroOnServer = res.data.data;
-
-    //     if (!heroOnServer) {
-    //         rl.write(`${hero.name} 详情不存在，保存...\n`);
-    //         await updateHeroDetail(hero);
-    //     } else {
-    //         let needUpdate = false;
-    //         for (let key of Object.keys(heroOnServer)) {
-    //             if (key === 'abilities') {
-    //                 for (let ability of hero.abilities) {
-    //                     rl.write(`比对 ${hero.name} 的 ${ability.name} 技能\n`);
-    //                     let abilityOnServer = heroOnServer.abilities.find(it => it.name === ability.name);
-    //                     if (!abilityOnServer) {
-    //                         rl.write(`${hero.name} 的技能 ${ability.name} 不存在\n`);
-    //                         heroOnServer.abilities.push(ability);
-    //                         needUpdate = true;
-    //                     } else {
-    //                         for (let abilityKey of Object.keys(abilityOnServer)) {
-    //                             if (abilityKey === 'attributes') {
-    //                                 if (ability.attributes) {
-    //                                     rl.write(`${hero.name} 的技能 ${ability.name} 属性进行赋值\n`);
-    //                                     abilityOnServer.attributes = ability.attributes;
-    //                                     // needUpdate = true;
-    //                                 }
-    //                             } else if (ability[abilityKey] && ability[abilityKey] !== abilityOnServer[abilityKey]) {
-    //                                 rl.write(`ability.${abilityKey} is ${typeof ability[abilityKey]} = ${ability[abilityKey]}  -->\n`);
-    //                                 rl.write(`abilityOnServer.${abilityKey} is ${typeof abilityOnServer[abilityKey]} = ${abilityOnServer[abilityKey]} \n`);
-    //                                 abilityOnServer[abilityKey] = ability[abilityKey];
-    //                                 needUpdate = true;
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-
-    //                 heroOnServer.abilities = heroOnServer.abilities.filter(it => {
-    //                     const ability = hero.abilities.find(a => a.name === it.name);
-    //                     if (ability) {
-    //                         return true;
-    //                     } else {
-    //                         rl.write(`${it.name}, 已经不存在！\n`);
-    //                         needUpdate = true;
-    //                         return false;
-    //                     }
-    //                 });
-    //             } else if (hero[key] && hero[key] !== heroOnServer[key]) {
-    //                 rl.write(`hero.${key} is ${typeof hero[key]} = ${hero[key]}  -->\n`);
-    //                 rl.write(`heroOnServer.${key} is ${typeof heroOnServer[key]} = ${heroOnServer[key]} \n`);
-    //                 heroOnServer[key] = hero[key];
-    //                 needUpdate = true;
-    //             }
-    //         }
-
-    //         if (needUpdate) {
-    //             rl.write(`${hero.name} 详情发生以上变化，保存...\n`);
-    //             await updateHeroDetail(heroOnServer);
-    //         } else {
-    //             rl.write(`${heroOnServer.name} 的详情没有变化,继续...\n`);
-    //         }
-    //     }
-    // }
-
-    // await browser.close();
-    rl.close();
+    } catch (e) {
+        console.error("crawler heros error-->", e);
+        process.exit(1);
+    }
 }
 
-// async function updateHeroDetail(hero: MongoHeroDetail) {
-//     if (!token) {
-//         await login();
-//     }
-
-//     const res: any = await axios.post(`${server}/api/public/admin/dota/hero/detailInfo`, hero, {
-//         headers: {
-//             'X-Auth-Token': token
-//         }
-//     }).catch(console.error);
-//     if(res.status === 200){
-//         rl.write(`${hero.name} 保存成功！`);
-//     }else{
-//         rl.write(`${hero.name} 保存失败！`);
-//     }
-
-// }
-
-// async function login() {
-//     const res: any = await axios.get(`${server}/api/public/admin/user/login`, {
-//         params: {
-//             username: process.env.WYCODE_ADMIN_USERNAME,
-//             password: process.env.WYCODE_ADMIN_PASSWORD
-//         }
-//     }).catch(console.error);
-//     rl.write(JSON.stringify(res.data, null, 2));
-//     token = res.data.data.token;
-// }
-
-// async function updateHeroBasic(hero: MongoDota2Hero) {
-//     if (!token) {
-//         await login();
-//     }
-
-//     const res = await axios.post(`${server}/api/public/admin/dota/hero/basicInfo`, hero, {
-//         headers: {
-//             'X-Auth-Token': token
-//         }
-//     }).catch(reason => console.error(reason));
-
-//     console.log(res);
-// }
-
-// function sleep(ms) {
-//     return new Promise(resolve => setTimeout(resolve, ms));
-// }
-
-// function question(question: string): Promise<string> {
-//     return new Promise(resolve => rl.question(question, resolve))
-// }
 
 dotenv.config();
 main();

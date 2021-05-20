@@ -6,6 +6,7 @@ export interface MongoDota2Hero {
 }
 
 export interface MongoHeroDetail {
+    _id: string;
     name: string;
     attackType: string;
     otherName: string;
