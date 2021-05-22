@@ -40,6 +40,15 @@ export async function uploadNewsDetail(id: string, detail: DotaNewsNode[]) {
     console.log("uploadNewsDetail->", res.data);
 }
 
+export async function uploadHero(hero) {
+    const res: any = await axios.post(`${server}/node/admin/dota/hero`, hero, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    console.log("uploadHero->", res.data);
+}
+
 export async function clearNews() {
     const res: any = await axios.delete(`${server}/node/admin/dota/news`, {
         headers: {

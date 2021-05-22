@@ -167,8 +167,13 @@ export function replaceValue(s: string, values: any[]): string {
     const matches = s.match(/%[^%]*%/g);
     if (matches && matches.length) {
         for (const match of matches) {
-            const value = getValue(values.find(v => v.name === match.substring(1, match.length - 1)))
-            result = result.replace(match, value);
+            let value = "%";
+            if (match.length > 2) {
+                value = getValue(values.find(v => v.name.toLowerCase() === match.substring(1, match.length - 1).toLowerCase()))
+            }
+            if (value) {
+                result = result.replace(match, value);
+            }
         }
     }
     return result
@@ -176,7 +181,9 @@ export function replaceValue(s: string, values: any[]): string {
 
 export function getValue(object: any): string {
     let value = ""
-    if (object.values_int.length) {
+    if (!object) {
+        return null;
+    } else if (object.values_int.length) {
         value = joinSlash(object.values_int.map(i => i + (object.is_percentage ? '%' : '')));
     } else if (object.values_float.length) {
         value = joinSlash(object.values_float.map(i => getSuitableFloat(i)).map(i => i + (object.is_percentage ? '%' : '')));
@@ -205,4 +212,25 @@ export function joinSlash(a: any[]): string {
         }
     }
     return hasDiff ? a.join('/') : a[0] + ''
+}
+
+export function getTalentString(t: any): string {
+    let result = t.name_loc;
+    const matches = result.match(/{s:(.*)}/);
+    if (matches && matches.length > 1) {
+        const v = getValue(t.special_values[0]);
+        result = result.replace(matches[0], v);
+    }
+    return result;
+}
+
+export function removeHtmlTag(s: string): string {
+    s = s.replace(/\n$/, "");
+    return s.replace(/<\s*(\S+)(\s[^>]*)?>/g, "");
+}
+
+export function clearStory(s: string): string {
+    s = s.replace(/<\s*(\S+)(\s[^>]*)?>/g, "");
+    s = s.replace(/[\r\n\t]+/g, "\n");
+    return s;
 }

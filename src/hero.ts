@@ -1,6 +1,8 @@
 import axios from "axios";
 import * as dotenv from "dotenv";
-import { getBehaviorName, getDispellableName, getEffectsName, getImmunityName, getSuitableFloat, getValue, joinSlash, replaceValue } from "./utils";
+import { MongoHeroDetail } from "./types";
+import { login, uploadHero } from "./uploader";
+import { clearStory, getBehaviorName, getDispellableName, getEffectsName, getImmunityName, getSuitableFloat, getTalentString, getValue, joinSlash, removeHtmlTag, replaceValue, sleep } from "./utils";
 
 async function main() {
     const listUrl = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2RhdGFmZWVkL2hlcm9MaXN0P3Rhc2s9aGVyb2xpc3Q=', 'base64').toString('utf-8');
@@ -9,18 +11,21 @@ async function main() {
     try {
         const res = await axios.get(listUrl);
         const heroes = res.data.result.heroes;
-        console.log("heroes->", heroes.length, heroes[0]);
+        console.log("heroes->", heroes.length);
         const detailUrl = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2RhdGFmZWVkL2hlcm8/aGVyb19pZD0=', 'base64').toString('utf-8');
+        // const h = heroes[7];
+        await login();
         for (const h of heroes) {
+            console.log("detailUrl->", detailUrl + h.id);
             const res_d = await axios.get(detailUrl + h.id);
             const res_h = res_d.data.result.heroes;
 
-            const result = {
-                _id: res_h.id,
+            const result: MongoHeroDetail | any = {
+                id: res_h.id,
                 name: res_h.name_loc,
                 eng: res_h.name_english_loc,
                 type: ['力量', '敏捷', '智力'][res_h.primary_attr],
-                story: res_h.bio_loc,
+                story: clearStory(res_h.bio_loc),
                 strengthStart: res_h.str_base,
                 strengthGrow: getSuitableFloat(res_h.str_gain),
                 agilityStart: res_h.agi_base,
@@ -45,16 +50,17 @@ async function main() {
                 manaRegen: getSuitableFloat(res_h.mana_regen),
                 abilities: []
             }
+
             let num = 0;
             for (const a of res_h.abilities) {
                 const ability = {
                     name: a.name_loc,
                     imageUrl: a.img,
-                    description: a.desc_loc,
+                    description: replaceValue(removeHtmlTag(a.desc_loc), a.special_values),
                     annotation: a.lore_loc,
                     magicConsumption: joinSlash(a.mana_costs),
                     coolDown: joinSlash(a.cooldowns),
-                    tips: a.notes_loc.join("\n"),
+                    tips: a.notes_loc.map(v => replaceValue(v, a.special_values)).join("\n"),
                     shard: a.shard_loc,
                     scepter: replaceValue(a.scepter_loc, a.special_values),
                     behavior: getBehaviorName(a.behavior),
@@ -66,18 +72,26 @@ async function main() {
                     attributes: {}
                 }
                 for (const v of a.special_values) {
-                    ability.attributes[v.heading_loc || v.name] = getValue(v);
+                    ability.attributes[removeHtmlTag(v.heading_loc) || v.name] = getValue(v);
                 }
 
                 num++;
                 result.abilities.push(ability);
             }
 
+            result.talent10Right = getTalentString(res_h.talents[0]);
+            result.talent10Left = getTalentString(res_h.talents[1]);
+            result.talent15Right = getTalentString(res_h.talents[2]);
+            result.talent15Left = getTalentString(res_h.talents[3]);
+            result.talent20Right = getTalentString(res_h.talents[4]);
+            result.talent20Left = getTalentString(res_h.talents[5]);
+            result.talent25Right = getTalentString(res_h.talents[6]);
+            result.talent25Left = getTalentString(res_h.talents[7]);
             console.log("hero up->", JSON.stringify(result, null, 2));
-            break;
+            
+            await uploadHero(result);
+            await sleep(5000);
         }
-
-
     } catch (e) {
         console.error("crawler heros error-->", e);
         process.exit(1);
