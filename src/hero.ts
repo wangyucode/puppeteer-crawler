@@ -90,7 +90,7 @@ async function main() {
             console.log("hero up->", JSON.stringify(result, null, 2));
             
             await uploadHero(result);
-            await sleep(5000);
+            await sleep(1000);
         }
     } catch (e) {
         console.error("crawler heros error-->", e);
