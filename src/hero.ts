@@ -1,7 +1,6 @@
 import axios from "axios";
 import * as dotenv from "dotenv";
-import { MongoHeroDetail } from "./types";
-import { getBehaviorName, getDispellableName, getEffectsName, getImmunityName } from "./utils";
+import { getBehaviorName, getDispellableName, getEffectsName, getImmunityName, getSuitableFloat, getValue, joinSlash, replaceValue } from "./utils";
 
 async function main() {
     const listUrl = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2RhdGFmZWVkL2hlcm9MaXN0P3Rhc2s9aGVyb2xpc3Q=', 'base64').toString('utf-8');
@@ -23,27 +22,27 @@ async function main() {
                 type: ['力量', '敏捷', '智力'][res_h.primary_attr],
                 story: res_h.bio_loc,
                 strengthStart: res_h.str_base,
-                strengthGrow: res_h.str_gain.toFixed(1),
+                strengthGrow: getSuitableFloat(res_h.str_gain),
                 agilityStart: res_h.agi_base,
-                agilityGrow: res_h.agi_gain.toFixed(1),
+                agilityGrow: getSuitableFloat(res_h.agi_gain),
                 intelligenceStart: res_h.int_base,
-                intelligenceGrow: res_h.int_gain.toFixed(1),
+                intelligenceGrow: getSuitableFloat(res_h.int_gain),
                 attackType: res_h.attack_capability === 1 ? '近战' : "远程",
                 attackPower: res_h.damage_min + "-" + res_h.damage_max,
-                attackRate: res_h.attack_rate.toFixed(0),
+                attackRate: getSuitableFloat(res_h.attack_rate),
                 attackRange: res_h.attack_range,
-                armor: res_h.armor.toFixed(1),
+                armor: getSuitableFloat(res_h.armor),
                 magicResistance: res_h.magic_resistance + "%",
                 speed: res_h.movement_speed,
                 img: res_h.index_img,
                 projectileSpeed: res_h.projectile_speed,
-                turnRate: res_h.turn_rate.toFixed(2),
+                turnRate: getSuitableFloat(res_h.turn_rate),
                 sightDay: res_h.sight_range_day,
                 sightNight: res_h.sight_range_night,
                 health: res_h.max_health,
-                healthRegen: res_h.health_regen.toFixed(2),
+                healthRegen: getSuitableFloat(res_h.health_regen),
                 mana: res_h.max_mana,
-                manaRegen: res_h.mana_regen.toFixed(2),
+                manaRegen: getSuitableFloat(res_h.mana_regen),
                 abilities: []
             }
             let num = 0;
@@ -53,23 +52,28 @@ async function main() {
                     imageUrl: a.img,
                     description: a.desc_loc,
                     annotation: a.lore_loc,
-                    magicConsumption: a.mana_costs.join('/'),
-                    coolDown: a.cooldowns.join("/"),
+                    magicConsumption: joinSlash(a.mana_costs),
+                    coolDown: joinSlash(a.cooldowns),
                     tips: a.notes_loc.join("\n"),
                     shard: a.shard_loc,
-                    scepter: a.scepter_loc,
+                    scepter: replaceValue(a.scepter_loc, a.special_values),
                     behavior: getBehaviorName(a.behavior),
                     dispellable: getDispellableName(a.dispellable),
                     immunity: getImmunityName(a.immunity),
                     effect: getEffectsName(a.target_team + "," + a.target_type),
                     damage: ["", "物理", "魔法", "纯粹", "纯粹"][a.damage],
-                    num
+                    num,
+                    attributes: {}
                 }
+                for (const v of a.special_values) {
+                    ability.attributes[v.heading_loc || v.name] = getValue(v);
+                }
+
                 num++;
                 result.abilities.push(ability);
             }
 
-            console.log("hero up->", result);
+            console.log("hero up->", JSON.stringify(result, null, 2));
             break;
         }
 

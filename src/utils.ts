@@ -77,49 +77,49 @@ export function getBehaviorName(e) {
 export function getEffectsName(t) {
     var a = "";
     switch (t) {
-    case "3,19":
-    case "3,3":
-    case "3,1":
-        a = "英雄";
-        break;
-    case "3,128":
-        a = "单位";
-        break;
-    case "1,19":
-    case "1,3":
-        a = "友方单位";
-        break;
-    case "1,1":
-        a = "友方英雄";
-        break;
-    case "2,3":
-    case "2,19":
-        a = "敌方单位";
-        break;
-    case "2,23":
-        a = "敌方单位和建筑";
-        break;
-    case "1,23":
-        a = "友方单位和建筑";
-        break;
-    case "2,0":
-    case "2,64":
-        a = "敌方";
-        break;
-    case "1,0":
-        a = "队友";
-        break;
-    case "2,1":
-        a = "敌方英雄";
-        break;
-    case "1,6":
-        a = "友方普通单位";
-        break;
-    case "2,6":
-        a = "敌方普通单位";
-        break;
-    default:
-        break
+        case "3,19":
+        case "3,3":
+        case "3,1":
+            a = "英雄";
+            break;
+        case "3,128":
+            a = "单位";
+            break;
+        case "1,19":
+        case "1,3":
+            a = "友方单位";
+            break;
+        case "1,1":
+            a = "友方英雄";
+            break;
+        case "2,3":
+        case "2,19":
+            a = "敌方单位";
+            break;
+        case "2,23":
+            a = "敌方单位和建筑";
+            break;
+        case "1,23":
+            a = "友方单位和建筑";
+            break;
+        case "2,0":
+        case "2,64":
+            a = "敌方";
+            break;
+        case "1,0":
+            a = "队友";
+            break;
+        case "2,1":
+            a = "敌方英雄";
+            break;
+        case "1,6":
+            a = "友方普通单位";
+            break;
+        case "2,6":
+            a = "敌方普通单位";
+            break;
+        default:
+            break
     }
     return a
 }
@@ -127,19 +127,19 @@ export function getEffectsName(t) {
 export function getImmunityName(e) {
     var t = "";
     switch (e) {
-    case 1:
-    case 3:
-        t = "是";
-        break;
-    case 2:
-    case 4:
-        t = "否";
-        break;
-    case 5:
-        t = "对友无视，对敌无效";
-        break;
-    default:
-        break
+        case 1:
+        case 3:
+            t = "是";
+            break;
+        case 2:
+        case 4:
+            t = "否";
+            break;
+        case 5:
+            t = "对友无视，对敌无效";
+            break;
+        default:
+            break
     }
     return t
 }
@@ -147,17 +147,62 @@ export function getImmunityName(e) {
 export function getDispellableName(e) {
     var t = "";
     switch (e) {
-    case 3:
-        t = "否";
-        break;
-    case 2:
-        t = "是";
-        break;
-    case 1:
-        t = "仅强驱散";
-        break;
-    default:
-        break
+        case 3:
+            t = "否";
+            break;
+        case 2:
+            t = "是";
+            break;
+        case 1:
+            t = "仅强驱散";
+            break;
+        default:
+            break
     }
     return t
+}
+
+export function replaceValue(s: string, values: any[]): string {
+    let result = s;
+    const matches = s.match(/%[^%]*%/g);
+    if (matches && matches.length) {
+        for (const match of matches) {
+            const value = getValue(values.find(v => v.name === match.substring(1, match.length - 1)))
+            result = result.replace(match, value);
+        }
+    }
+    return result
+}
+
+export function getValue(object: any): string {
+    let value = ""
+    if (object.values_int.length) {
+        value = joinSlash(object.values_int.map(i => i + (object.is_percentage ? '%' : '')));
+    } else if (object.values_float.length) {
+        value = joinSlash(object.values_float.map(i => getSuitableFloat(i)).map(i => i + (object.is_percentage ? '%' : '')));
+    }
+
+    return value
+}
+
+export function getSuitableFloat(f: number, i: number = 2): string {
+    let result = f.toFixed(i);
+    if (/\./.test(result)) {
+        if (result.charAt(result.length - 1) === '0') {
+            result = getSuitableFloat(f, --i);
+        }
+    }
+    return result;
+}
+
+export function joinSlash(a: any[]): string {
+    let last = a[0];
+    let hasDiff = false;
+    for (const v of a) {
+        if (last !== v) {
+            hasDiff = true;
+            break;
+        }
+    }
+    return hasDiff ? a.join('/') : a[0] + ''
 }
