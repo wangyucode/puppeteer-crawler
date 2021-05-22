@@ -2,7 +2,7 @@ import axios from "axios";
 import * as dotenv from "dotenv";
 import { MongoHeroDetail } from "./types";
 import { login, uploadHero } from "./uploader";
-import { clearStory, getBehaviorName, getDispellableName, getEffectsName, getImmunityName, getSuitableFloat, getTalentString, getValue, joinSlash, removeHtmlTag, replaceValue, sleep } from "./utils";
+import { clearStory, convertImageUrl, getBehaviorName, getDispellableName, getEffectsName, getImmunityName, getSuitableFloat, getTalentString, getValue, joinSlash, removeHtmlTag, replaceValue, sleep } from "./utils";
 
 async function main() {
     const listUrl = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2RhdGFmZWVkL2hlcm9MaXN0P3Rhc2s9aGVyb2xpc3Q=', 'base64').toString('utf-8');
@@ -39,7 +39,7 @@ async function main() {
                 armor: getSuitableFloat(res_h.armor),
                 magicResistance: res_h.magic_resistance + "%",
                 speed: res_h.movement_speed,
-                img: res_h.index_img,
+                img: convertImageUrl(res_h.index_img),
                 projectileSpeed: res_h.projectile_speed,
                 turnRate: getSuitableFloat(res_h.turn_rate),
                 sightDay: res_h.sight_range_day,
@@ -55,7 +55,7 @@ async function main() {
             for (const a of res_h.abilities) {
                 const ability = {
                     name: a.name_loc,
-                    imageUrl: a.img,
+                    imageUrl: convertImageUrl(a.img),
                     description: replaceValue(removeHtmlTag(a.desc_loc), a.special_values),
                     annotation: a.lore_loc,
                     magicConsumption: joinSlash(a.mana_costs),
