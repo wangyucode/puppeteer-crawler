@@ -1,16 +1,11 @@
 import axios from "axios";
 import * as dotenv from "dotenv";
-import * as readline from "readline";
 import puppeteer from "puppeteer/lib/cjs/puppeteer/node-puppeteer-core";
 import evaluate = require("./evaluate-item");
 import evaluateNeutral = require("./evaluate-neutral-item");
 import { sleep } from "./utils";
 import { login, server, updateItem } from "./uploader";
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
 
 async function main() {
     try {
@@ -38,7 +33,7 @@ async function main() {
         for (let item of items) {
             let itemOnServer = itemsOnServer.find(itemOnServer => item.key == itemOnServer._id);
             if (!itemOnServer) {
-                rl.write(`发现新的物品：${item.name}\n`);
+                console.log(`发现新的物品：${item.name}\n`);
                 await updateItem(item);
             } else {
                 console.log(`比对物品：${item.name}\n`);
@@ -50,17 +45,17 @@ async function main() {
                     let needUpdate = false;
                     for (let key of Object.keys(itemOnServer)) {
                         if (item[key] && item[key] !== itemOnServer[key]) {
-                            rl.write(`${key} 不一致！\n`);
+                            console.log(`${key} 不一致！\n`);
                             needUpdate = true;
                             itemOnServer[key] = item[key];
                             itemOnServer.key = item.key;
                         }
                     }
                     if (needUpdate) {
-                        rl.write(`更新 ${item.name} \n`);
+                        console.log(`更新 ${item.name} \n`);
                         await updateItem(itemOnServer);
                     } else {
-                        rl.write(`无需更新 ${item.name} \n`);
+                        console.log(`无需更新 ${item.name} \n`);
                     }
 
                 }
@@ -71,10 +66,6 @@ async function main() {
         console.error("crawler heros error-->", e);
         process.exit(1);
     }
-
-
-    rl.close();
-
 }
 
 dotenv.config();
