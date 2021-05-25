@@ -226,6 +226,7 @@ export function getTalentString(t: any): string {
 
 export function removeHtmlTag(s: string): string {
     s = s.replace(/\n$/, "");
+    s = s.replace(/[：:]$/, "");
     return s.replace(/<\s*(\S+)(\s[^>]*)?>/g, "");
 }
 
