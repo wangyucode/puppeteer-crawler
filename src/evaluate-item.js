@@ -92,13 +92,12 @@ module.exports = () => {
                 item.attrs[key_value[0]] = key_value[1];
             }
             try {
-                showItemInFullBox(item._id, 0);
+                showItemInFullBox(item.key, 0);
             } catch (e) {
                 console.error(item.name, e);
                 items.push(item);
                 continue;
             }
-
 
             // components: [
             // 'helm_of_iron_will',
@@ -107,8 +106,8 @@ module.exports = () => {
             // ],
             item.components = [];
             for (let node of document.querySelectorAll('#fullItemRecipeItems > div.recipeComponent')) {
-                let component = node.getAttribute('itemname');
-                if (component && component !== 'recipe"') item.components.push(node.getAttribute('itemname'));
+                const component = node.getAttribute('itemname');
+                if (component && component !== 'recipe"') item.components.push(component);
             }
             items.push(item);
         }

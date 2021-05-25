@@ -1,7 +1,7 @@
 import axios from "axios";
 import { DotaNews, DotaNewsNode } from "./types";
 
-const server = process.env.ENV === 'prod' ? "https://wycode.cn" : "http://localhost:8082";
+export const server = process.env.ENV === 'prod' ? "https://wycode.cn" : "http://localhost:8082";
 let token = "";
 
 export async function uploadSchedules(schedules: any[]) {
@@ -47,6 +47,15 @@ export async function uploadHero(hero) {
         }
     });
     console.log("uploadHero->", res.data);
+}
+
+export async function updateItem(item) {
+    const res: any = await axios.post(`${server}/node/admin/dota/item`, item, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    console.log("updateItem->", res.data);
 }
 
 export async function clearNews() {
