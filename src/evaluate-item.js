@@ -14,15 +14,15 @@ module.exports = () => {
         let type = shopColumn.querySelector('h4').innerText;
         // TODO remove after 1.8 
         if (type === '装备') {
-            type === '军备';
+            type = '军备';
         } else if (type === '其他') {
-            type === '奥术';
+            type = '奥术';
         } else if (type === '配件') {
-            type === '常用';
+            type = '常用';
         } else if (type === '兵刃') {
-            type === '武器';
+            type = '武器';
         } else if (type === '宝物') {
-            type === '圣物';
+            type = '圣物';
         }
 
         const itemElements = shopColumn.querySelectorAll('.itemIconWithTooltip');
