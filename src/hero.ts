@@ -98,6 +98,6 @@ async function main() {
     }
 }
 
-
+axios.defaults.timeout = 30000;
 dotenv.config();
 main();

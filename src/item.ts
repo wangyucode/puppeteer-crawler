@@ -31,7 +31,7 @@ async function main() {
             throw new Error("物品数目不对!\n");
         }
         for (let item of items) {
-            let itemOnServer = itemsOnServer.find(itemOnServer => item.key == itemOnServer._id);
+            let itemOnServer = itemsOnServer.find(itemOnServer => item.key === itemOnServer._id);
             if (!itemOnServer) {
                 console.log(`发现新的物品：${item.name}\n`);
                 await updateItem(item);
@@ -44,7 +44,7 @@ async function main() {
                 } else {
                     let needUpdate = false;
                     for (let key of Object.keys(itemOnServer)) {
-                        if (item[key] && item[key] !== itemOnServer[key]) {
+                        if (item[key] && JSON.stringify(item[key]) !== JSON.stringify(itemOnServer[key])) {
                             console.log(`${key} 不一致！\n`);
                             needUpdate = true;
                             itemOnServer[key] = item[key];
@@ -68,5 +68,6 @@ async function main() {
     }
 }
 
+axios.defaults.timeout = 30000;
 dotenv.config();
 main();
