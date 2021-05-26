@@ -14,7 +14,7 @@ async function main() {
             defaultViewport: null
         });
         const pages = await browser.pages();
-        await pages[0].goto(Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2l0ZW1zL2luZGV4Lmh0bQ==', 'base64').toString('utf-8') + '?#tab1');
+        await pages[0].goto(Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2l0ZW1zL2luZGV4Lmh0bQ==', 'base64').toString('utf-8') + '?#tab1', { timeout: 120 * 1000 });
         await sleep(1000);
         const items: any = await pages[0].evaluate(evaluate)
 
