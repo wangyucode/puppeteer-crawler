@@ -1,5 +1,5 @@
 import axios from "axios";
-import { DotaNews, DotaNewsNode } from "./types";
+import { DotaNews } from "./types";
 
 export const server = process.env.ENV === 'prod' ? "https://wycode.cn" : "http://localhost:8082";
 let token = "";
@@ -22,22 +22,14 @@ export async function uploadLeagues(leagues: any[]) {
     console.log("uploadLeagues->", res.data);
 }
 
-export async function uploadNews(news: DotaNews[]) {
-    const res: any = await axios.put(`${server}/node/admin/dota/news`, news, {
+export async function uploadNews(news: DotaNews): Promise<number> {
+    const res: any = await axios.post(`${server}/node/admin/dota/news`, news, {
         headers: {
             Authorization: `Bearer ${token}`
         }
     });
     console.log("uploadNews->", res.data);
-}
-
-export async function uploadNewsDetail(id: string, detail: DotaNewsNode[]) {
-    const res: any = await axios.put(`${server}/node/admin/dota/news/${id}`, detail, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-    console.log("uploadNewsDetail->", res.data);
+    return res.data.payload;
 }
 
 export async function uploadHero(hero) {
@@ -56,15 +48,6 @@ export async function updateItem(item) {
         }
     });
     console.log("updateItem->", res.data);
-}
-
-export async function clearNews() {
-    const res: any = await axios.delete(`${server}/node/admin/dota/news`, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-    console.log("clearNews->", res.data);
 }
 
 export async function login() {

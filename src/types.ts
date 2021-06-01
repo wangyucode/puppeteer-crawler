@@ -45,11 +45,12 @@ export interface MongoHeroAbility {
 }
 
 export interface DotaNews {
-    href: string;
+    _id: string;
     img: string;
     title: string;
     content: string;
     date: string;
+    details: DotaNewsNode[];
 }
 
 export interface DotaNewsNode{
