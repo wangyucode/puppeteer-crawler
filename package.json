@@ -9,7 +9,8 @@
     "start:hero": "ts-node src/hero.ts",
     "start:item": "ts-node src/item.ts",
     "start:league": "ts-node src/league.ts",
-    "start:match": "ts-node src/match.ts"
+    "start:match": "ts-node src/match.ts",
+    "start:flight": "ts-node src/flight.ts"
   },
   "author": "wayne",
   "license": "ISC",
