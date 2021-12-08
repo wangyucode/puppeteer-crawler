@@ -8,9 +8,10 @@ import { login, server, updateItem } from "./uploader";
 
 
 async function main() {
+    const IS_PROD = process.env.ENV === 'prod';
     try {
         const browser = await puppeteer.launch({
-            devtools: process.env.ENV === 'dev',
+            devtools: !IS_PROD,
             defaultViewport: null
         });
         const pages = await browser.pages();
@@ -26,7 +27,7 @@ async function main() {
 
         const res: any = await axios.get(`${server}/node/dota/items`);
         const itemsOnServer = res.data.payload;
-        await login();
+        if (IS_PROD) await login();
         if (itemsOnServer.length !== items.length) {
             throw new Error("物品数目不对!\n");
         }
@@ -53,7 +54,7 @@ async function main() {
                     }
                     if (needUpdate) {
                         console.log(`更新 ${item.name} \n`);
-                        await updateItem(itemOnServer);
+                        if (IS_PROD) await updateItem(itemOnServer);
                     } else {
                         console.log(`无需更新 ${item.name} \n`);
                     }
@@ -64,7 +65,7 @@ async function main() {
         await browser.close();
     } catch (e) {
         console.error("crawler heros error-->", e);
-        process.exit(1);
+        // process.exit(1);
     }
 }
 

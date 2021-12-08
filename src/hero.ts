@@ -7,14 +7,13 @@ import { clearStory, convertImageUrl, getBehaviorName, getDispellableName, getEf
 async function main() {
     const listUrl = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2RhdGFmZWVkL2hlcm9MaXN0P3Rhc2s9aGVyb2xpc3Q=', 'base64').toString('utf-8');
     console.log("listUrl->", listUrl);
-
+    const IS_PROD = process.env.ENV === 'prod';
     try {
         const res = await axios.get(listUrl);
         const heroes = res.data.result.heroes;
         console.log("heroes->", heroes.length);
         const detailUrl = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL2RhdGFmZWVkL2hlcm8/aGVyb19pZD0=', 'base64').toString('utf-8');
-        // const h = heroes[7];
-        await login();
+        if (IS_PROD) await login();
         for (const h of heroes) {
             console.log("detailUrl->", detailUrl + h.id);
             const res_d = await axios.get(detailUrl + h.id);
@@ -89,7 +88,7 @@ async function main() {
             result.talent25Left = getTalentString(res_h.talents[7]);
             console.log("hero up->", JSON.stringify(result, null, 2));
             
-            await uploadHero(result);
+            if (IS_PROD) await uploadHero(result);
             await sleep(1000);
         }
     } catch (e) {

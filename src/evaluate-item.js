@@ -42,7 +42,8 @@ module.exports = () => {
             // name: '莫尔迪基安的臂章',
             item.name = document.querySelector('#iconTooltip > div.itemName').innerText;
             // cost: 2380,
-            item.cost = Number.parseInt(document.querySelector('#iconTooltip > div.goldCost').innerText);
+            const costDiv = document.querySelector('#iconTooltip > div.goldCost');
+            item.cost = costDiv ? Number.parseInt(document.querySelector('#iconTooltip > div.goldCost').innerText) : 0;
             // lore: '能让你成为野兽的武器，持有者牺牲自己的生命能量来获得巨大力量。',
             item.lore = document.querySelector('#iconTooltip > div.lore').innerText;
             // mc: '0',
@@ -125,6 +126,6 @@ module.exports = () => {
         }
         i++;
     }
-    console.log(items);
+    console.log("items-->", items);
     return items;
 };

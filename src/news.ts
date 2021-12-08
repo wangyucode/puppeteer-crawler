@@ -6,14 +6,15 @@ import { login, uploadNews } from "./uploader";
 
 async function crawlNews() {
     const url = Buffer.from('aHR0cHM6Ly93d3cuZG90YTIuY29tLmNuL25ld3MvaW5kZXg=', "base64").toString('utf-8');
+    const IS_PROD = process.env.ENV === 'prod';
     try {
         const browser = await puppeteer.launch({
-            devtools: process.env.ENV === 'dev',
+            devtools: !IS_PROD,
             defaultViewport: null
         });
         const pages = await browser.pages();
-        const size = process.env.ENV === 'prod' ? 10 : 2;
-        await login();
+        const size = IS_PROD ? 10 : 2;
+        if (IS_PROD) await login();
         for (let i = 1; i <= size; i++) {
             console.log('goto->', `${url}${i}.html`);
             await pages[0].goto(`${url}${i}.html`);
@@ -79,7 +80,9 @@ async function crawlNews() {
                 it.details = detail;
                 it._id = file[1];
                 console.log(it);
-                if (await uploadNews(it) !== 1) throw Error('exist');
+                if (IS_PROD) {
+                    if (await uploadNews(it) !== 1) throw Error('exist');
+                }
             }
         }
         await browser.close();
