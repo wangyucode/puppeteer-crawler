@@ -1,4 +1,3 @@
-import { getSuitableFloat } from "./src/utils";
+import { convertImageUrl } from "./src/utils";
 
-setTimeout(()=>{},5000 + Math.random() * 5000);
-console.log(getSuitableFloat(1.000089))
+console.log(convertImageUrl('https://img.dota2.com.cn/dota2static/herostatic/index/npc_dota_hero_elder_titan.png'))

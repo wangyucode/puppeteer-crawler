@@ -1,5 +1,5 @@
 import axios from "axios";
-import * as dotenv from "dotenv";
+
 import puppeteer from "puppeteer/lib/cjs/puppeteer/node-puppeteer-core";
 import evaluate = require("./evaluate-item");
 import evaluateNeutral = require("./evaluate-neutral-item");
@@ -24,18 +24,20 @@ async function main() {
         const neutralItems: any = await pages[0].evaluate(evaluateNeutral)
 
         items.push(...neutralItems);
-
-        const res: any = await axios.get(`${server}/node/dota/items`);
-        const itemsOnServer = res.data.payload;
-        if (IS_PROD) await login();
-        if (itemsOnServer.length !== items.length) {
-            throw new Error("物品数目不对!\n");
+        if (items.length < 200) {
+            throw new Error(`爬取物品数目过少! ${items.length}`)
         }
+        const res: any = await axios.get(`${server}/node/dota/items`);
+        const itemsOnServer: Array<any> = res.data.payload;
+        if (itemsOnServer.length < 200) {
+            throw new Error(`服务器物品数目过少! ${itemsOnServer.length}`)
+        }
+        if (IS_PROD) await login();
         for (let item of items) {
             let itemOnServer = itemsOnServer.find(itemOnServer => item.key === itemOnServer._id);
             if (!itemOnServer) {
                 console.log(`发现新的物品：${item.name}\n`);
-                await updateItem(item);
+                if (IS_PROD) await updateItem(item);
             } else {
                 console.log(`比对物品：${item.name}\n`);
                 const detailRes: any = await axios.get(`${server}/node/dota/items/${item.key}`);
@@ -46,7 +48,7 @@ async function main() {
                     let needUpdate = false;
                     for (let key of Object.keys(itemOnServer)) {
                         if (item[key] && JSON.stringify(item[key]) !== JSON.stringify(itemOnServer[key])) {
-                            console.log(`${key} 不一致！\n`);
+                            console.log(`${key} 不一致！s=${JSON.stringify(itemOnServer[key])}, c=${JSON.stringify(item[key])}\n`);
                             needUpdate = true;
                             itemOnServer[key] = item[key];
                             itemOnServer.key = item.key;
@@ -64,11 +66,9 @@ async function main() {
         }
         await browser.close();
     } catch (e) {
-        console.error("crawler heros error-->", e);
-        // process.exit(1);
+        console.error("crawler item error-->", e);
+        process.exit(1);
     }
 }
-
 axios.defaults.timeout = 30000;
-dotenv.config();
 main();

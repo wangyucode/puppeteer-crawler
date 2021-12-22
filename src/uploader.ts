@@ -1,7 +1,9 @@
 import axios from "axios";
 import { DotaNews } from "./types";
+import * as dotenv from "dotenv";
 
-export const server = process.env.ENV === 'prod' ? "https://wycode.cn" : "http://localhost:8082";
+dotenv.config();
+export const server = process.env.ENV === 'prod' ? "https://wycode.cn" : "http://localhost:8081";
 let token = "";
 
 export async function uploadSchedules(schedules: any[]) {

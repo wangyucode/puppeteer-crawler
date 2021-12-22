@@ -15,7 +15,7 @@ module.exports = () => {
         // TODO remove after 1.8 
         if (type === '装备') {
             type = '军备';
-        } else if (type === '其他') {
+        } else if (type === '其它') {
             type = '奥术';
         } else if (type === '配件') {
             type = '常用';
