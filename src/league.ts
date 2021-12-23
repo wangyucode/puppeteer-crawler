@@ -1,5 +1,4 @@
 import puppeteer from "puppeteer/lib/cjs/puppeteer/node-puppeteer-core";
-import * as dotenv from "dotenv";
 import { sleep } from "./utils";
 import { login, uploadLeagues } from "./uploader";
 
@@ -65,7 +64,7 @@ async function start() {
             const league: any = await p.evaluate(() => {
                 // @ts-ignore
                 const img = document.querySelector('div.info-logo > img').src;
-                const title = document.querySelector('div.info-text-date > span').textContent;
+                const title = document.querySelector('span.abbr').textContent;
                 const date = document.querySelector('div.info-text-date').textContent.substring(title.length).trim().split('至');
                 let start = new Date(date[0]);
                 // @ts-ignore
@@ -79,6 +78,7 @@ async function start() {
 
                 return { img, title, start, end, location, organizer, prize };
             });
+            console.log("getting-->", league.title);
             league.star = nameStar.get(league.title).star;
             league.status = nameStar.get(league.title).status;
             leagues.push(league);
@@ -86,11 +86,11 @@ async function start() {
 
         console.log("size-->", leagues.length);
         console.log("leagues-->", JSON.stringify(leagues, null, 2));
-        if (leagues.length) {
+
+        if (!leagues.length) throw new Error('length = 0!');
+        if (process.env.ENV === 'prod') {
             await login();
             await uploadLeagues(leagues);
-        } else {
-            throw new Error('length = 0!');
         }
 
         await browser.close();
@@ -100,5 +100,4 @@ async function start() {
     }
 }
 
-dotenv.config();
 start();
