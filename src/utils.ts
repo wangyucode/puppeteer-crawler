@@ -12,7 +12,7 @@ export function convertImageUrl(url: string): string {
     if(url.startsWith(staticUrl)){
         return 'https://wycode.cn' + url.substring(24);
     } else if(url.startsWith(staticUrl1)){
-        return 'https://wycode.cn' + url.substring(24);
+        return 'https://wycode.cn' + url.substring(27);
     } else {
         return url;
     }
