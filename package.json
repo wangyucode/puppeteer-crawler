@@ -10,13 +10,17 @@
     "start:item": "ts-node src/item.ts",
     "start:league": "ts-node src/league.ts",
     "start:match": "ts-node src/match.ts",
-    "start:flight": "ts-node src/flight.ts"
+    "start:flight": "ts-node src/flight.ts",
+    "start:weibo": "ts-node src/weibo.ts"
   },
   "author": "wayne",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.1",
     "dotenv": "^8.2.0",
+    "lodash": "^4.17.21",
+    "node-html-parser": "^5.3.3",
+    "node-xlsx": "^0.21.0",
     "puppeteer": "^9.0.0",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.4"

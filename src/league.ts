@@ -13,7 +13,7 @@ async function start() {
         let pages = await browser.pages();
         console.log(url);
         await pages[0].goto(url, { timeout: 120 * 1000 });
-        console.log(await pages[0].evaluate(()=> document.body.lang));
+        console.log(await pages[0].evaluate(() => document.body.lang));
         const areas = await pages[0].evaluate(() => {
             return document.querySelectorAll('ul.place-nav > li').length;
         });
@@ -62,22 +62,28 @@ async function start() {
 
         for (const p of pages) {
             const league: any = await p.evaluate(() => {
-                // @ts-ignore
-                const img = document.querySelector('div.info-logo > img').src;
-                const title = document.querySelector('span.abbr').textContent;
-                const date = document.querySelector('div.info-text-date').textContent.substring(title.length).trim().split('至');
-                let start = new Date(date[0]);
-                // @ts-ignore
-                start = `${start.getFullYear()}/${start.getMonth()+1}/${start.getDate()}`
-                let end = new Date(date[1]);
-                // @ts-ignore
-                end = `${end.getFullYear()}/${end.getMonth()+1}/${end.getDate()}`
-                const location = document.querySelector('span.b2 > i').textContent;
-                const organizer = document.querySelector('span.b3 > i').textContent;
-                const prize = document.querySelector('span.b5 > i').textContent;
+                try {
+                    // @ts-ignore
+                    const img = document.querySelector('div.info-logo > img').src;
+                    const title = document.querySelector('span.abbr').textContent;
+                    const date = document.querySelector('div.info-text-date').textContent.substring(title.length).trim().split('至');
+                    let start = new Date(date[0]);
+                    // @ts-ignore
+                    start = `${start.getFullYear()}/${start.getMonth() + 1}/${start.getDate()}`
+                    let end = new Date(date[1]);
+                    // @ts-ignore
+                    end = `${end.getFullYear()}/${end.getMonth() + 1}/${end.getDate()}`
+                    const location = document.querySelector('span.b2 > i').textContent;
+                    const organizer = document.querySelector('span.b3 > i').textContent;
+                    const prize = document.querySelector('span.b5 > i').textContent;
 
-                return { img, title, start, end, location, organizer, prize };
+                    return { img, title, start, end, location, organizer, prize };
+                } catch (error) {
+                    return null;
+                }
+
             });
+            if(!league) continue;
             console.log("getting-->", league.title);
             league.star = nameStar.get(league.title).star;
             league.status = nameStar.get(league.title).status;
