@@ -1,3 +1,5 @@
+import {isEmpty} from 'lodash'
+
 export function sleep(ms: number): Promise<number> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -183,9 +185,9 @@ export function getValue(object: any): string {
     let value = ""
     if (!object) {
         return null;
-    } else if (object.values_int.length) {
+    } else if (!isEmpty(object.values_int)) {
         value = joinSlash(object.values_int.map(i => i + (object.is_percentage ? '%' : '')));
-    } else if (object.values_float.length) {
+    } else if (!isEmpty(object.values_float)) {
         value = joinSlash(object.values_float.map(i => getSuitableFloat(i)).map(i => i + (object.is_percentage ? '%' : '')));
     }
 
