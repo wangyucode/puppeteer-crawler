@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as dotenv from "dotenv";
+import { forIn } from "lodash";
 import { MongoHeroDetail } from "./types";
 import { login, uploadHero } from "./uploader";
 import { clearStory, convertImageUrl, getBehaviorName, getDispellableName, getEffectsName, getImmunityName, getSuitableFloat, getTalentString, getValue, joinSlash, removeHtmlTag, replaceValue, sleep } from "./utils";
@@ -71,7 +72,32 @@ async function main() {
                     attributes: {}
                 }
                 for (const v of a.special_values) {
-                    ability.attributes[removeHtmlTag(v.heading_loc) || v.name] = getValue(v);
+                    let key = removeHtmlTag(v.heading_loc) || v.name;
+                    let value = getValue(v);
+                    if (key === 'AbilityManaCost') continue;
+                    if (key === 'AbilityCooldown') continue;
+                    if (key === 'AbilityCastPoint') continue;
+                    if (key === 'AbilityCastRange') {
+                        if (value === '0') continue;
+                        key = '作用范围';
+                    }
+                    if (key === 'AbilityChannelTime') {
+                        if (value === '0') continue;
+                        key = '吟唱时间';
+                    }
+                    if (key === 'AbilityCharges') {
+                        if (value === '0') continue;
+                        key = '充能';
+                    }
+                    if (key === 'AbilityChargeRestoreTime') {
+                        if (value === '0') continue;
+                        key = '充能时间'
+                    }
+                    if (key === 'AbilityDuration') {
+                        if (value === '0') continue;
+                        key = '持续时间'
+                    }
+                    if (ability.attributes[key] === undefined) ability.attributes[key] = value;
                 }
 
                 num++;
@@ -86,15 +112,79 @@ async function main() {
             result.talent20Left = getTalentString(res_h.talents[5]);
             result.talent25Right = getTalentString(res_h.talents[6]);
             result.talent25Left = getTalentString(res_h.talents[7]);
-            console.log("hero up->", JSON.stringify(result, null, 2));
-            
-            if (IS_PROD) await uploadHero(result);
+
+
+            const isDifferent = await isDifferentFromServer(result);
+            console.log(`${result.name} ${isDifferent ? '有不同！':'一样'}`);
+            if (IS_PROD && isDifferent) await uploadHero(result);
             await sleep(1000);
         }
     } catch (e) {
         console.error("crawler heros error-->", e);
         process.exit(1);
     }
+}
+
+async function isDifferentFromServer(hero: MongoHeroDetail): Promise<boolean> {
+    console.log("正在比较->", hero.name);
+    const serverHero = (await axios.get(`https://wycode.cn/node/dota/heroes/${encodeURIComponent(hero.name)}`)).data.payload;
+
+    let heroHasDifference = false;
+    let abilitiesHasDifference = false;
+    forIn(serverHero, (value, key) => {
+        if (key === '_id') return;
+        if (key === 'otherName') return;
+        if (key === 'icon') {
+            if (!value) throw new Error(`${hero.name}没有icon`);
+            return;
+        }
+        const heroValue = hero[key];
+
+        if (key !== 'abilities') {
+            // hero
+            if (value !== heroValue) {
+                heroHasDifference = true;
+                console.log(`英雄属性 ${key} from: ${value} to: ${heroValue}`);
+                return;
+            };
+        } else {
+            // ability
+            if (value.length !== hero.abilities.length) {
+                abilitiesHasDifference = true;
+                throw new Error(`技能数量不同 from: ${value.length} to ${hero.abilities.length}`);
+            } else {
+                for (let i = 0; i < value.length; i++) {
+                    const serverAbility = value[i];
+                    const ability = hero.abilities[i];
+
+                    if (ability.name !== serverAbility.name) {
+                        throw new Error(`技能名称不同 from: ${serverAbility.name} to ${ability.name}`);
+                    }
+
+                    forIn(serverAbility, (a_value, a_key) => {
+                        if (a_key !== 'attributes') {
+                            if (a_value !== ability[a_key]) {
+                                abilitiesHasDifference = true;
+                                console.log(`技能 ${ability.name} 主要属性 ${a_key} from: ${a_value} to: ${ability[a_key]}`);
+                                return;
+                            }
+                        } else {
+                            // attributes
+                            forIn(ability.attributes, (attr_value, attr_key) => {
+                                if (attr_value !== serverAbility.attributes[attr_key]) {
+                                    console.log(`技能 ${ability.name} 其它属性 ${attr_key} from: ${serverAbility.attributes[attr_key]} to: ${attr_value}`);
+                                    abilitiesHasDifference = true;
+                                }
+                            });
+                        }
+
+                    });
+                }
+            }
+        }
+
+    });
+    return heroHasDifference || abilitiesHasDifference;
 }
 
 axios.defaults.timeout = 30000;

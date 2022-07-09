@@ -29,7 +29,7 @@ export interface MongoHeroDetail {
     talent15Right: string;
     talent10Left: string;
     talent10Right: string;
-    abilities: MongoHeroAbility;
+    abilities: MongoHeroAbility[];
 }
 
 export interface MongoHeroAbility {
