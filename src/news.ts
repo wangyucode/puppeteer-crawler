@@ -22,6 +22,7 @@ async function crawlNews() {
             let pageNews: DotaNews[] = await pages[0].evaluate(() => {
                 const pageNews = [];
                 document.querySelectorAll('a.item').forEach((it: any) => {
+                    // @ts-ignore
                     pageNews.push({
                         _id: it.href,
                         img: it.querySelector('img').src,
@@ -52,8 +53,9 @@ async function crawlNews() {
                 await sleep(1000);
                 const detail: DotaNewsNode[] = await pages[0].evaluate(() => {
                     const detail = [];
-                    document.querySelectorAll('div.content > p').forEach((it: Element) => {
-                        const node: DotaNewsNode = { type: 'p', content: '' };
+                    document.querySelectorAll('div.content > p,figure').forEach((it) => {
+                        const node = { type: 'p', content: '' };
+                        // @ts-ignore
                         node.content = it.textContent;
                         switch (it.childNodes[0] && it.childNodes[0]['tagName']) {
                             case 'B':
@@ -64,20 +66,19 @@ async function crawlNews() {
                                 break;
                             case 'IMG':
                                 node.type = 'img';
-                                node.content = it.childNodes[0]['src'];
+                                node.content = convertImageUrl(it.childNodes[0]['src']);
                                 break;
                             default:
                                 node.type = 'p';
                                 break;
                         }
+                        // @ts-ignore
                         detail.push(node)
                     });
                     return detail;
                 });
-                detail.forEach(it => {
-                    if (it.type === 'img') it.content = convertImageUrl(it.content);
-                });
                 it.details = detail;
+                // @ts-ignore
                 it._id = file[1];
                 console.log(it);
                 if (IS_PROD) {
