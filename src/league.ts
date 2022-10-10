@@ -1,10 +1,9 @@
 import puppeteer from "puppeteer/lib/cjs/puppeteer/node-puppeteer-core";
 import { sleep } from "./utils";
-import { login, uploadLeagues } from "./uploader";
+import { login, uploadLeagues, uploadSchedules } from "./uploader";
 
 async function start() {
-    const url = Buffer.from('aHR0cHM6Ly93d3cudnBnYW1lLmNvbS9zY2hlZHVsZS9sZWFndWU/Z2FtZV90eXBlPWRvdGEmbGFuZz16aF9DTg==', "base64").toString('utf-8');
-    const leagues = [];
+    const url = Buffer.from('aHR0cHM6Ly9lcy51dXU5LmNvbS9kb3RhLw==', "base64").toString('utf-8');
     try {
         const browser = await puppeteer.launch({
             devtools: process.env.ENV === 'dev',
@@ -13,90 +12,111 @@ async function start() {
         let pages = await browser.pages();
         console.log(url);
         await pages[0].goto(url, { timeout: 120 * 1000 });
-        console.log(await pages[0].evaluate(() => document.body.lang));
-        const areas = await pages[0].evaluate(() => {
-            return document.querySelectorAll('ul.place-nav > li').length;
+
+        const leagues = await pages[0].evaluate(() => {
+            const leagues = [];
+            const leaguesDOM = document.querySelectorAll('div.tc_pic > ul.clear > li');
+            leaguesDOM.forEach(ld => {
+                const title = ld.querySelector('p')?.textContent;
+                const img = ld.querySelector('img')?.src;
+                const statusClass = ld.querySelector('i.status')?.classList[1];
+                const status = statusClass === 's_2' ? 'start' : statusClass === 's_3' ? 'end' : 'wait';
+                // @ts-ignore
+                leagues.push({ title, img, status });
+            });
+
+            return leagues;
         });
 
-        console.log('areas--->', areas);
+        console.log('leagues on main page--->', leagues);
 
-        const nameStar = new Map();
-        for (let i = 0; i < areas; i++) {
-            await pages[0].evaluate((index) => {
-                // @ts-ignore
-                document.querySelectorAll('ul.place-nav > li')[index].click();
-            }, i);
+        // for (let i = 0; i < leagues.length; i++) {
+        //     await pages[0].evaluate((index) => {
+        //         // @ts-ignore
+        //         document.querySelectorAll('div.tc_pic li a')[index].click();
+        //     }, i);
 
-            await sleep(2000);
+        //     await sleep(2000);
+        // }
 
-            const areaLeagues = await pages[0].evaluate(() => {
-                const areaLeagues = [];
-                document.querySelectorAll('p.zh_CN_wait').forEach((league) => {
-                    const name = league.parentElement.querySelector('div.league-abbr').textContent
-                    const star = league.parentElement.querySelector('div.star').childNodes.length;
-                    if (star > 3) {
-                        areaLeagues.push({ name, star, status: 'wait' });
-                        league.parentElement.click();
+        const matches = await pages[0].evaluate(async (u) => {
+            // @ts-ignore
+            const token = document.querySelector('body > script:last-child').textContent.match(/'_token': "(\w+)"/)[1];
+            // @ts-ignore
+            const body = new FormData();
+            body.append('_token', token);
+            body.append('page', '1');
+            body.append('type', '1');
+            const now = new Date();
+            const from = `${now.getFullYear()}-${now.getMonth() < 9 ? `0${now.getMonth() + 1}` : now.getMonth() + 1}-${now.getDate() < 10 ? `0${now.getDate()}` : now.getDate()}`;
+            now.setDate(now.getDate() + 1);
+            const to = `${now.getFullYear()}-${now.getMonth() < 9 ? `0${now.getMonth() + 1}` : now.getMonth() + 1}-${now.getDate() < 10 ? `0${now.getDate()}` : now.getDate()}`;
+            const time = `${from} ~ ${to}`;
+            body.append('time', time);
+            return await (await fetch(u, { method: 'POST', body })).json();
+        }, `${url}search`);
+
+        console.log('get matches ->', matches);
+
+        const schedules = [];
+        if (matches.code === 200 && matches.data.length > 0) {
+            let schedule: any = {};
+            for (const m of matches.data) {
+                if (schedule.date !== m.start_date.split(' ')[0]) {
+                    schedule = {
+                        date: m.start_date.split(' ')[0],
+                        matches: []
                     }
-                });
-
-                document.querySelectorAll('p.zh_CN_start').forEach((league) => {
-                    const name = league.parentElement.querySelector('div.league-abbr').textContent
-                    const star = league.parentElement.querySelector('div.star').childNodes.length;
-                    areaLeagues.push({ name, star, status: 'start' });
-                    league.parentElement.click();
-                });
-                return areaLeagues;
-            });
-            console.log('areaLeagues--->', i, JSON.stringify(areaLeagues, null, 2))
-            for (const v of areaLeagues) {
-                nameStar.set(v.name, v);
+                    schedules.push(schedule);
+                }
+                schedule.matches.push({
+                    name: `${m.match_name} ${m.small_match_name} ${m.fight_name}`,
+                    time: m.start_date.split(' ')[1],
+                    bo: m.bo,
+                    teamA: m.aTeam.team_name,
+                    teamB: m.bTeam.team_name,
+                    logoA: m.aTeam.image,
+                    logoB: m.bTeam.image
+                })
             }
         }
 
-        await pages[0].close();
+        await sleep(2000);
 
-        console.log("nameStar-->", nameStar.size);
+        await pages[0].close();
 
         pages = await browser.pages();
 
-        for (const p of pages) {
-            const league: any = await p.evaluate(() => {
-                try {
-                    // @ts-ignore
-                    const img = document.querySelector('div.info-logo > img').src;
-                    const title = document.querySelector('span.abbr').textContent;
-                    const date = document.querySelector('div.info-text-date').textContent.substring(title.length).trim().split('至');
-                    let start = new Date(date[0]);
-                    // @ts-ignore
-                    start = `${start.getFullYear()}/${start.getMonth() + 1}/${start.getDate()}`
-                    let end = new Date(date[1]);
-                    // @ts-ignore
-                    end = `${end.getFullYear()}/${end.getMonth() + 1}/${end.getDate()}`
-                    const location = document.querySelector('span.b2 > i').textContent;
-                    const organizer = document.querySelector('span.b3 > i').textContent;
-                    const prize = document.querySelector('span.b5 > i').textContent;
-
-                    return { img, title, start, end, location, organizer, prize };
-                } catch (error) {
-                    return null;
-                }
-
-            });
-            if(!league) continue;
-            console.log("getting-->", league.title);
-            league.star = nameStar.get(league.title).star;
-            league.status = nameStar.get(league.title).status;
-            leagues.push(league);
+        for (let i = 0; i < leagues.length; i++) {
+            const league: any = await pages[i].evaluate((l) => {
+                const date = document.querySelector('div.lt_box i')?.textContent?.trim().split('至');
+                // @ts-ignore
+                l.start = date[0].trim().replaceAll('-', '/');
+                // @ts-ignore
+                l.end = date[0].trim().replaceAll('-', '/');
+                // @ts-ignore
+                l.location = document.querySelector('div.lt_box span').textContent.replaceAll(' ', '');
+                // @ts-ignore
+                l.prize = document.querySelector('div.lt_box span.price').textContent;
+                // @ts-ignore
+                l.content = document.querySelector('div.lt_box p').textContent;
+                l.rules = '';
+                document.querySelectorAll('div.tc_rule p').forEach(r => {
+                    l.rules += r.textContent;
+                    l.rules += '\n';
+                });
+                return l;
+            }, leagues[i]);
+            // @ts-ignore
+            leagues[i] = league;
         }
 
-        console.log("size-->", leagues.length);
         console.log("leagues-->", JSON.stringify(leagues, null, 2));
 
-        if (!leagues.length) throw new Error('length = 0!');
         if (process.env.ENV === 'prod') {
             await login();
             await uploadLeagues(leagues);
+            await uploadSchedules(schedules);
         }
 
         await browser.close();
