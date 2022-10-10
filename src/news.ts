@@ -66,7 +66,7 @@ async function crawlNews() {
                                 break;
                             case 'IMG':
                                 node.type = 'img';
-                                node.content = convertImageUrl(it.childNodes[0]['src']);
+                                node.content = it.childNodes[0]['src'];
                                 break;
                             default:
                                 node.type = 'p';
@@ -76,6 +76,9 @@ async function crawlNews() {
                         detail.push(node)
                     });
                     return detail;
+                });
+                detail.forEach(it => {
+                    if (it.type === 'img') it.content = convertImageUrl(it.content);
                 });
                 it.details = detail;
                 // @ts-ignore
