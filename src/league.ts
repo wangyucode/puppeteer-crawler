@@ -30,14 +30,14 @@ async function start() {
 
         console.log('leagues on main page--->', leagues);
 
-        // for (let i = 0; i < leagues.length; i++) {
-        //     await pages[0].evaluate((index) => {
-        //         // @ts-ignore
-        //         document.querySelectorAll('div.tc_pic li a')[index].click();
-        //     }, i);
+        for (let i = 0; i < leagues.length; i++) {
+            await pages[0].evaluate((index) => {
+                // @ts-ignore
+                document.querySelectorAll('div.tc_pic li a')[index].click();
+            }, i);
 
-        //     await sleep(2000);
-        // }
+            await sleep(2000);
+        }
 
         const matches = await pages[0].evaluate(async (u) => {
             // @ts-ignore
