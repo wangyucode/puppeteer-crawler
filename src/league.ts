@@ -72,7 +72,7 @@ async function start() {
                 schedule.matches.push({
                     name: `${m.match_name} ${m.small_match_name} ${m.fight_name}`,
                     time: m.start_date.split(' ')[1],
-                    bo: m.bo,
+                    bo: `BO ${m.bo}`,
                     teamA: m.aTeam.team_name,
                     teamB: m.bTeam.team_name,
                     logoA: m.aTeam.image,
@@ -93,7 +93,7 @@ async function start() {
                 // @ts-ignore
                 l.start = date[0].trim().replaceAll('-', '/');
                 // @ts-ignore
-                l.end = date[0].trim().replaceAll('-', '/');
+                l.end = date[1].trim().replaceAll('-', '/');
                 // @ts-ignore
                 l.location = document.querySelector('div.lt_box span').textContent.replaceAll(' ', '');
                 // @ts-ignore
