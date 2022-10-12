@@ -3,7 +3,7 @@ import { sleep } from "./utils";
 import { login, uploadLeagues, uploadSchedules } from "./uploader";
 
 async function start() {
-    const url = Buffer.from('aHR0cHM6Ly9lcy51dXU5LmNvbS9kb3RhLw==', "base64").toString('utf-8');
+    const url = Buffer.from('aHR0cHM6Ly9lcy51dXU5LmNvbS9kb3RhL2RwYw==', "base64").toString('utf-8');
     try {
         const browser = await puppeteer.launch({
             devtools: process.env.ENV === 'dev',
@@ -13,19 +13,18 @@ async function start() {
         console.log(url);
         await pages[0].goto(url, { timeout: 120 * 1000 });
 
-        const leagues = await pages[0].evaluate(() => {
-            const leagues = [];
-            const leaguesDOM = document.querySelectorAll('div.tc_pic > ul.clear > li');
-            leaguesDOM.forEach(ld => {
-                const title = ld.querySelector('p')?.textContent;
-                const img = ld.querySelector('img')?.src;
-                const statusClass = ld.querySelector('i.status')?.classList[1];
+        const teams = await pages[0].evaluate(() => {
+            const teams = [];
+            document.querySelectorAll('div.dpc_slide').forEach(d => {
+                const rank = Number.parseInt(d.querySelector('td:nth-child(1) > span').textContent);
+                const img = d.querySelector('img')?.src;
+                const statusClass = d.querySelector('i.status')?.classList[1];
                 const status = statusClass === 's_2' ? 'start' : statusClass === 's_3' ? 'end' : 'wait';
                 // @ts-ignore
-                leagues.push({ title, img, status });
+                teams.push({ title, img, status });
             });
 
-            return leagues;
+            return teams;
         });
 
         console.log('leagues on main page--->', leagues);
