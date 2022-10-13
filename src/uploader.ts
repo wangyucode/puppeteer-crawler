@@ -6,6 +6,16 @@ dotenv.config();
 export const server = process.env.ENV === 'prod' ? "https://wycode.cn" : "http://localhost:8081";
 let token = "";
 
+export async function uploadTeams(teams: any[]) {
+    const res: any = await axios.put(`${server}/node/admin/dota/teams`, teams, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    console.log("uploadTeams->", res.data);
+}
+
+
 export async function uploadSchedules(schedules: any[]) {
     const res: any = await axios.put(`${server}/node/admin/dota/schedules`, schedules, {
         headers: {

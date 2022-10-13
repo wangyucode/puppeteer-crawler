@@ -9,7 +9,7 @@
     "start:hero": "ts-node src/hero.ts",
     "start:item": "ts-node src/item.ts",
     "start:league": "ts-node src/league.ts",
-    "start:match": "ts-node src/match.ts",
+    "start:team": "ts-node src/team.ts",
     "start:flight": "ts-node src/flight.ts",
     "start:weibo": "ts-node src/weibo.ts"
   },
