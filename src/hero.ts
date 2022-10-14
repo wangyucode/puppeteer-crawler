@@ -23,6 +23,7 @@ async function main() {
             const result: MongoHeroDetail | any = {
                 id: res_h.id,
                 name: res_h.name_loc,
+                complexity: ['','简单','中等','复杂'][res_h.complexity],
                 eng: res_h.name_english_loc,
                 type: ['力量', '敏捷', '智力'][res_h.primary_attr],
                 story: clearStory(res_h.bio_loc),
@@ -134,10 +135,7 @@ async function isDifferentFromServer(hero: MongoHeroDetail): Promise<boolean> {
     forIn(serverHero, (value, key) => {
         if (key === '_id') return;
         if (key === 'otherName') return;
-        if (key === 'icon') {
-            if (!value) throw new Error(`${hero.name}没有icon`);
-            return;
-        }
+        if (key === 'icon') return;
         const heroValue = hero[key];
 
         if (key !== 'abilities') {
@@ -151,14 +149,15 @@ async function isDifferentFromServer(hero: MongoHeroDetail): Promise<boolean> {
             // ability
             if (value.length !== hero.abilities.length) {
                 abilitiesHasDifference = true;
-                throw new Error(`技能数量不同 from: ${value.length} to ${hero.abilities.length}`);
             } else {
                 for (let i = 0; i < value.length; i++) {
                     const serverAbility = value[i];
                     const ability = hero.abilities[i];
 
                     if (ability.name !== serverAbility.name) {
-                        throw new Error(`技能名称不同 from: ${serverAbility.name} to ${ability.name}`);
+                        console.log(`技能名称不同 from: ${serverAbility.name} to ${ability.name}`);
+                        abilitiesHasDifference = true;
+                        break;
                     }
 
                     forIn(serverAbility, (a_value, a_key) => {
